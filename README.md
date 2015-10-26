@@ -15,7 +15,7 @@ var _ = require('underscore'),
     throttle = require('throttle-promised')({max:10, minWait:10, maxWait:100});
     
 _.each(range(100), function(i) {
-  throttle(function() {
+  throttle.throttle(function() {
     return Q.promise(function(resolve, reject) {
       setTimeout(function() {
         resolve(i);
