@@ -9,18 +9,20 @@ Throttle promise execution to a maximum count:
 npm install throttle-promised --save
 ```
 
-## Example throttling 100 promises through 10 executors
+## Example throttling 100 promises through a gate with 10 executors
 ```js
 var _ = require('underscore'),
-    throttle = require('throttle-promised')({max:10, minWait:10, maxWait:100});
+    gate = require('throttle-promised')({max:10, minWait:10, maxWait:100});
     
-_.each(range(100), function(i) {
-  throttle.throttle(function() {
+_.each(_.range(100), function(i) {
+  gate.throttle(function() {
     return Q.promise(function(resolve, reject) {
       setTimeout(function() {
         resolve(i);
       }, 100);
     });
+  }).then(function(i) {//Place the 'then' hook outside the throttle, so work that doesnt need to be gated runs free.
+    console.log('Finished processing:', i);
   });
 });
 ```

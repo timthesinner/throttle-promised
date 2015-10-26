@@ -37,6 +37,10 @@ module.exports = function(properties) {
     return new Throttle(properties.max, properties.minWait, properties.maxWait);
   }
 }
+
+Throttle.prototype.promise = function(fn) {
+  return Q.promise(fn.bind(this, this));
+}
     
 Throttle.prototype.release = function(cb, res) {
   this.active -= 1;
@@ -48,9 +52,9 @@ Throttle.prototype.throttle = function(fn) {
     return Q.delay(random(this.minWait, this.maxWait)).then(this.throttle.bind(this, fn));
   } else {
     this.active += 1;
-    return Q.promise(function (resolve, reject, notify) {
-      fn().then(this.release.bind(this, resolve))
-          .fail(this.release.bind(this, reject));
+    return this.promise(function (self, resolve, reject) {
+      fn().then(self.release.bind(self, resolve))
+          .fail(self.release.bind(self, reject));
     });
   }
 }
