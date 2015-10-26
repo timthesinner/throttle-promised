@@ -9,7 +9,7 @@ Throttle promise execution to a maximum count:
 npm install throttle-promised --save
 ```
 
-## Example throttling 100 promoses through 10 executors
+## Example throttling 100 promises through 10 executors
 ```js
 var _ = require('underscore'),
     throttle = require('throttle-promised')({max:10, minWait:10, maxWait:100});
