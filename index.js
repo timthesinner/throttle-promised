@@ -58,3 +58,60 @@ Throttle.prototype.throttle = function(fn) {
     });
   }
 }
+
+function Serial(count) {
+  this.count = count || 1;
+}
+module.exports.serial = function(count) {
+  if (! count) {
+    return new Serial(1);
+  } else {
+    return new Serial(count);
+  }
+}
+
+Serial.prototype.promise = function(fn) {
+  return Q.promise(fn.bind(this, this));
+}
+
+function first(array, count) {
+  var res = [],
+      len = array.length;
+  for (var i = 0; i < count && i < len; i++) {
+    res.push(array.shift());
+  }
+  return res;
+}
+
+function map(array, fn) {
+  var res = [];
+  for (var i in array) {
+    res.push(fn(array[i]));
+  }
+  return res;
+}
+
+Serial.prototype.batch = function(array, fn) {
+  if (!array || array.length === 0) {
+    return Q(array);
+  }
+  
+  var orig = array;
+  return this.promise(function(self, resolve, reject) {
+    function exec() {
+      try {
+        if (array.length !== 0) {
+          Q.allSettled(map(first(array, self.count), function(res) {
+            return fn(res);
+          })).then(exec).fail(exec);
+        } else {
+          resolve(orig);
+        }
+      } catch (err) {
+        console.log(err, err.stack);
+        reject(err);
+      }
+    }
+    exec();
+  });
+}
